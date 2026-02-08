@@ -1,8 +1,9 @@
 import { type UIChatMessage } from '@lobechat/types';
-import { ActionIconGroup, createRawModal } from '@lobehub/ui';
+import { ActionIconGroup, Flexbox, createRawModal } from '@lobehub/ui';
 import type { ActionIconGroupEvent, ActionIconGroupItemType } from '@lobehub/ui';
 import { memo, useCallback, useMemo } from 'react';
 
+import { ReactionPicker } from '../../../components/Reaction';
 import ShareMessageModal, { type ShareModalProps } from '../../../components/ShareMessageModal';
 import {
   Provider,
@@ -68,6 +69,7 @@ export const AssistantActionsBar = memo<AssistantActionsBarProps>(
   ({ actionsConfig, id, data, index }) => {
     const { error, tools } = data;
     const store = useConversationStoreApi();
+    const addReaction = useConversationStore((s) => s.addReaction);
 
     const handleOpenShareModal = useCallback(() => {
       createRawModal(
@@ -209,7 +211,12 @@ export const AssistantActionsBar = memo<AssistantActionsBarProps>(
 
     if (error) return <ErrorActionsBar actions={defaultActions} onActionClick={handleAction} />;
 
-    return <ActionIconGroup items={items} menu={menu} onActionClick={handleAction} />;
+    return (
+      <Flexbox align={'center'} gap={8} horizontal>
+        <ReactionPicker onSelect={(emoji) => addReaction(id, emoji)} />
+        <ActionIconGroup items={items} menu={menu} onActionClick={handleAction} />
+      </Flexbox>
+    );
   },
 );
 

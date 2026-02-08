@@ -5,10 +5,11 @@ import { Flexbox } from '@lobehub/ui';
 import { createStyles } from 'antd-style';
 import { memo } from 'react';
 
+import ReactionPicker from './ReactionPicker';
+
 const useStyles = createStyles(({ css, token }) => ({
   active: css`
-    border: 1px solid ${token.colorPrimary};
-    background: ${token.colorPrimaryBg};
+    background: ${token.colorFillTertiary};
   `,
   container: css`
     display: flex;
@@ -27,12 +28,13 @@ const useStyles = createStyles(({ css, token }) => ({
     gap: 4px;
     align-items: center;
 
-    padding-block: 2px;
-    padding-inline: 8px;
-    border: 1px solid transparent;
-    border-radius: ${token.borderRadius}px;
+    height: 28px;
+    padding-block: 0;
+    padding-inline: 10px;
+    border-radius: 14px;
 
     font-size: 14px;
+    line-height: 1;
 
     background: ${token.colorFillSecondary};
 
@@ -50,6 +52,10 @@ interface ReactionDisplayProps {
    */
   isActive?: (emoji: string) => boolean;
   /**
+   * Callback when an emoji is added via the inline picker
+   */
+  onAdd?: (emoji: string) => void;
+  /**
    * Callback when a reaction is clicked
    */
   onReactionClick?: (emoji: string) => void;
@@ -59,26 +65,29 @@ interface ReactionDisplayProps {
   reactions: EmojiReaction[];
 }
 
-const ReactionDisplay = memo<ReactionDisplayProps>(({ reactions, onReactionClick, isActive }) => {
-  const { styles, cx } = useStyles();
+const ReactionDisplay = memo<ReactionDisplayProps>(
+  ({ reactions, onReactionClick, onAdd, isActive }) => {
+    const { styles, cx } = useStyles();
 
-  if (reactions.length === 0) return null;
+    if (reactions.length === 0) return null;
 
-  return (
-    <Flexbox className={styles.container} horizontal>
-      {reactions.map((reaction) => (
-        <div
-          className={cx(styles.reactionTag, isActive?.(reaction.emoji) && styles.active)}
-          key={reaction.emoji}
-          onClick={() => onReactionClick?.(reaction.emoji)}
-        >
-          <span>{reaction.emoji}</span>
-          {reaction.count > 1 && <span className={styles.count}>{reaction.count}</span>}
-        </div>
-      ))}
-    </Flexbox>
-  );
-});
+    return (
+      <Flexbox align={'center'} className={styles.container} horizontal>
+        {reactions.map((reaction) => (
+          <div
+            className={cx(styles.reactionTag, isActive?.(reaction.emoji) && styles.active)}
+            key={reaction.emoji}
+            onClick={() => onReactionClick?.(reaction.emoji)}
+          >
+            <span>{reaction.emoji}</span>
+            {reaction.count > 1 && <span className={styles.count}>{reaction.count}</span>}
+          </div>
+        ))}
+        {onAdd && <ReactionPicker onSelect={onAdd} />}
+      </Flexbox>
+    );
+  },
+);
 
 ReactionDisplay.displayName = 'ReactionDisplay';
 

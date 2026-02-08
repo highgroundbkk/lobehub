@@ -1,13 +1,18 @@
 'use client';
 
+import data from '@emoji-mart/data';
+import Picker from '@emoji-mart/react';
 import { ActionIcon, Flexbox, Tooltip } from '@lobehub/ui';
 import { Popover } from 'antd';
-import { createStyles } from 'antd-style';
-import { SmilePlus } from 'lucide-react';
+import { createStyles, useTheme } from 'antd-style';
+import { PlusIcon, SmilePlus } from 'lucide-react';
 import { type FC, type ReactNode, memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const QUICK_REACTIONS = ['👍', '👎', '❤️', '😄', '🎉', '😢', '🤔', '🚀'];
+import { useGlobalStore } from '@/store/global';
+import { globalGeneralSelectors } from '@/store/global/selectors';
+
+const QUICK_REACTIONS = ['👍', '👎', '❤️', '😄', '😂', '😅', '🎉', '😢', '🤔', '🚀'];
 
 const useStyles = createStyles(({ css, token }) => ({
   emojiButton: css`
@@ -30,39 +35,74 @@ const useStyles = createStyles(({ css, token }) => ({
       background: ${token.colorFillSecondary};
     }
   `,
+  moreButton: css`
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 32px;
+    height: 32px;
+    border-radius: ${token.borderRadius}px;
+
+    color: ${token.colorTextTertiary};
+
+    transition: all 0.2s;
+
+    &:hover {
+      color: ${token.colorText};
+      background: ${token.colorFillSecondary};
+    }
+  `,
   pickerContainer: css`
-    padding: 8px;
+    padding: 4px;
   `,
 }));
 
 interface ReactionPickerProps {
-  /**
-   * Callback when an emoji is selected
-   */
   onSelect: (emoji: string) => void;
-  /**
-   * Custom trigger element
-   */
   trigger?: ReactNode;
 }
 
 const ReactionPicker: FC<ReactionPickerProps> = memo(({ onSelect, trigger }) => {
   const { styles } = useStyles();
   const { t } = useTranslation('chat');
+  const theme = useTheme();
+  const locale = useGlobalStore(globalGeneralSelectors.currentLanguage);
   const [open, setOpen] = useState(false);
+  const [showFullPicker, setShowFullPicker] = useState(false);
 
   const handleSelect = (emoji: string) => {
     onSelect(emoji);
     setOpen(false);
+    setShowFullPicker(false);
   };
 
-  const content = (
+  const handleOpenChange = (visible: boolean) => {
+    setOpen(visible);
+    if (!visible) setShowFullPicker(false);
+  };
+
+  const content = showFullPicker ? (
+    <Picker
+      data={data}
+      locale={locale?.split('-')[0] || 'en'}
+      onEmojiSelect={(emoji: any) => handleSelect(emoji.native)}
+      previewPosition="none"
+      skinTonePosition="none"
+      theme={theme.appearance === 'dark' ? 'dark' : 'light'}
+    />
+  ) : (
     <Flexbox className={styles.pickerContainer} gap={4} horizontal wrap="wrap">
       {QUICK_REACTIONS.map((emoji) => (
         <div className={styles.emojiButton} key={emoji} onClick={() => handleSelect(emoji)}>
           {emoji}
         </div>
       ))}
+      <div className={styles.moreButton} onClick={() => setShowFullPicker(true)}>
+        <PlusIcon size={16} />
+      </div>
     </Flexbox>
   );
 
@@ -70,15 +110,18 @@ const ReactionPicker: FC<ReactionPickerProps> = memo(({ onSelect, trigger }) => 
     <Popover
       arrow={false}
       content={content}
-      onOpenChange={setOpen}
+      onOpenChange={handleOpenChange}
       open={open}
+      overlayInnerStyle={{ padding: 0 }}
       placement="top"
       trigger="click"
     >
       {trigger || (
-        <Tooltip title={t('messageAction.reaction')}>
-          <ActionIcon icon={SmilePlus} size="small" />
-        </Tooltip>
+        <span {...(open ? { 'data-popup-open': '' } : {})}>
+          <Tooltip title={t('messageAction.reaction')}>
+            <ActionIcon icon={SmilePlus} size="small" />
+          </Tooltip>
+        </span>
       )}
     </Popover>
   );
