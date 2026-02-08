@@ -15,7 +15,6 @@ const useStyles = createStyles(({ css, token }) => ({
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
-    margin-block-start: 8px;
   `,
   count: css`
     font-size: 12px;

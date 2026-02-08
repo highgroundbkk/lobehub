@@ -13,7 +13,8 @@ export interface ReactionFeedbackConfig {
 
 /**
  * Reaction Feedback Processor
- * Converts emoji reactions to feedback text and injects into assistant messages
+ * Converts emoji reactions on assistant messages to feedback text
+ * and injects into the next user message, where the model will actually attend to it.
  */
 export class ReactionFeedbackProcessor extends BaseProcessor {
   readonly name = 'ReactionFeedbackProcessor';
@@ -33,27 +34,38 @@ export class ReactionFeedbackProcessor extends BaseProcessor {
     const clonedContext = this.cloneContext(context);
     let processedCount = 0;
 
+    // Collect emojis from assistant messages, then inject into the next user message
+    let pendingEmojis: string[] = [];
+
     for (let i = 0; i < clonedContext.messages.length; i++) {
       const message = clonedContext.messages[i];
 
-      // Only process assistant messages with reactions
+      // Collect reactions from assistant messages
       if (message.role === 'assistant' && message.metadata?.reactions) {
         const reactions = message.metadata.reactions as EmojiReaction[];
-        const feedbackText = this.convertReactionsToFeedback(reactions);
+        const emojis = reactions.map((r) => r.emoji).filter(Boolean);
 
-        if (feedbackText) {
-          const originalContent = message.content;
-
-          // Only append feedback to string content
-          if (typeof originalContent === 'string') {
-            clonedContext.messages[i] = {
-              ...message,
-              content: `${originalContent}\n\n[User Feedback: ${feedbackText}]`,
-            };
-            processedCount++;
-            log(`Injected feedback for message ${message.id}: ${feedbackText}`);
-          }
+        if (emojis.length > 0) {
+          pendingEmojis.push(...emojis);
+          log(`Collected reaction emojis from message ${message.id}: ${emojis.join(' ')}`);
         }
+      }
+
+      // Inject accumulated feedback into the next user message
+      if (message.role === 'user' && pendingEmojis.length > 0) {
+        const originalContent = message.content;
+
+        if (typeof originalContent === 'string') {
+          const feedbackTag = `[User Feedback Emoji: ${pendingEmojis.join(' ')}]`;
+
+          clonedContext.messages[i] = {
+            ...message,
+            content: `${feedbackTag}\n\n${originalContent}`,
+          };
+          processedCount += pendingEmojis.length;
+        }
+
+        pendingEmojis = [];
       }
     }
 
@@ -61,40 +73,5 @@ export class ReactionFeedbackProcessor extends BaseProcessor {
     log(`Reaction feedback processing completed, processed ${processedCount} messages`);
 
     return this.markAsExecuted(clonedContext);
-  }
-
-  /**
-   * Convert reactions array to human-readable feedback text
-   */
-  private convertReactionsToFeedback(reactions: EmojiReaction[]): string {
-    const feedbackParts: string[] = [];
-
-    for (const reaction of reactions) {
-      const sentiment = this.getEmojiSentiment(reaction.emoji);
-      if (sentiment) {
-        feedbackParts.push(sentiment);
-      }
-    }
-
-    return feedbackParts.join(', ');
-  }
-
-  /**
-   * Map emoji to sentiment description
-   */
-  private getEmojiSentiment(emoji: string): string | null {
-    const sentimentMap: Record<string, string> = {
-      '❤️': 'loved this response',
-      '🎉': 'user found this excellent',
-      '👀': 'user wants to look into this more',
-      '👍': 'positive - user found this helpful',
-      '👎': 'negative - user found this unhelpful',
-      '😄': 'user found this amusing',
-      '😢': 'user found this sad or disappointing',
-      '🚀': 'user found this impressive',
-      '🤔': 'user wants more clarification',
-    };
-
-    return sentimentMap[emoji] || `reacted with ${emoji}`;
   }
 }
