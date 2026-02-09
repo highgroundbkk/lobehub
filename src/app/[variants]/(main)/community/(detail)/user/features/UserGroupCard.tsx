@@ -308,7 +308,7 @@ const UserGroupCard = memo<UserGroupCardProps>(
               <PublishedTime
                 className={styles.secondaryDesc}
                 date={createdAt}
-                template={'MMM DD, YYYY'}
+               
               />
             </Flexbox>
             {category && t(`category.groupAgent.${category}` as any, { defaultValue: category })}

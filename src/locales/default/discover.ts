@@ -262,6 +262,10 @@ export default {
 
   'mcp.categories.travel-transport.name': 'Travel & Transport',
 
+  'mcp.categories.utility.name': 'Utility',
+
+  'mcp.categories.utility.description': 'Weather Forecasting and Meteorological Services',
+
   'mcp.categories.weather.description': 'Weather Forecasting and Meteorological Services',
 
   'mcp.categories.weather.name': 'Weather',
@@ -845,6 +849,11 @@ export default {
   'providers.supportedModels': 'Supported Models',
 
   'publishedTime': 'Published',
+
+  'time.formatOtherYear': 'MMM D, YYYY',
+  'time.formatThisYear': 'MMM D',
+  'time.today': 'Today',
+  'time.yesterday': 'Yesterday',
 
   'search.placeholder': 'Search by name, description, or keywords...',
 

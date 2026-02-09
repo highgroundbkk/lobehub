@@ -226,7 +226,7 @@ const AssistantItem = memo<DiscoverAssistantItem>(
               <PublishedTime
                 className={styles.secondaryDesc}
                 date={createdAt}
-                template={'MMM DD, YYYY'}
+               
               />
             </Flexbox>
             {t(`category.assistant.${category}` as any)}
