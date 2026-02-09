@@ -171,6 +171,10 @@ export default {
 
   'groupAgents.underReview': 'Under Review',
 
+  'home.creatorReward.action': 'Apply Now',
+  'home.creatorReward.subtitle': '2026 Creator Reward Program is officially live.',
+  'home.creatorReward.title': 'Create. Share. Get Paid.',
+
   'home.communityAgents': 'Community Agents',
 
   'home.featuredAssistants': 'Featured Agents',

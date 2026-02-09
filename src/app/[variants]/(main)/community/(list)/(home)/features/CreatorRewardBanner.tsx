@@ -3,6 +3,7 @@
 import { Button, Flexbox } from '@lobehub/ui';
 import { createStaticStyles, cx, responsive } from 'antd-style';
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useIsDark } from '@/hooks/useIsDark';
 
@@ -73,6 +74,7 @@ const styles = createStaticStyles(({ css }) => ({
 }));
 
 const CreatorRewardBanner = memo(() => {
+  const { t } = useTranslation('discover');
   const isDark = useIsDark();
 
   return (
@@ -82,16 +84,14 @@ const CreatorRewardBanner = memo(() => {
     >
       <Flexbox gap={8} style={{ position: 'relative', zIndex: 1 }}>
         <h2 className={cx(styles.title, isDark ? styles.title_dark : styles.title_light)}>
-          Create. Share. Get Paid.
+          {t('home.creatorReward.title')}
         </h2>
-        <p
-          className={cx(styles.subtitle, isDark ? styles.subtitle_dark : styles.subtitle_light)}
-        >
-          2026 Creator Reward Program is officially live.
+        <p className={cx(styles.subtitle, isDark ? styles.subtitle_dark : styles.subtitle_light)}>
+          {t('home.creatorReward.subtitle')}
         </p>
         <div style={{ marginBlockStart: 4 }}>
           <a href={'#'} rel={'noopener noreferrer'} target={'_blank'}>
-            <Button type={'primary'}>Apply Now</Button>
+            <Button type={'primary'}>{t('home.creatorReward.action')}</Button>
           </a>
         </div>
       </Flexbox>
