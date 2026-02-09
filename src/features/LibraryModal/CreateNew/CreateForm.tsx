@@ -1,4 +1,4 @@
-import { Button, Form, Input, TextArea } from '@lobehub/ui';
+import { Button, Flexbox, Input, TextArea } from '@lobehub/ui';
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -15,13 +15,18 @@ interface CreateFormProps {
 const CreateForm = memo<CreateFormProps>(({ id, initialValues, onClose, onSuccess }) => {
   const { t } = useTranslation('knowledgeBase');
   const [loading, setLoading] = useState(false);
+  const [name, setName] = useState(initialValues?.name || '');
+  const [description, setDescription] = useState(initialValues?.description || '');
   const createNewKnowledgeBase = useKnowledgeBaseStore((s) => s.createNewKnowledgeBase);
   const updateKnowledgeBase = useKnowledgeBaseStore((s) => s.updateKnowledgeBase);
 
   const isEditMode = !!id;
 
-  const onFinish = async (values: CreateKnowledgeBaseParams) => {
+  const handleSubmit = async () => {
+    if (!name.trim()) return;
+
     setLoading(true);
+    const values = { name: name.trim(), description: description.trim() };
 
     try {
       if (isEditMode) {
@@ -32,7 +37,6 @@ const CreateForm = memo<CreateFormProps>(({ id, initialValues, onClose, onSucces
         const newId = await createNewKnowledgeBase(values);
         setLoading(false);
 
-        // Call onSuccess callback if provided, otherwise navigate directly
         if (onSuccess) {
           onSuccess(newId);
           onClose?.();
@@ -47,36 +51,23 @@ const CreateForm = memo<CreateFormProps>(({ id, initialValues, onClose, onSucces
   };
 
   return (
-    <Form
-      gap={16}
-      initialValues={initialValues}
-      itemsType={'flat'}
-      layout={'vertical'}
-      footer={
-        <Button block htmlType={'submit'} loading={loading} type={'primary'}>
-          {isEditMode ? t('createNew.edit.confirm') : t('createNew.confirm')}
-        </Button>
-      }
-      items={[
-        {
-          children: <Input autoFocus placeholder={t('createNew.name.placeholder')} />,
-          label: t('createNew.name.placeholder'),
-          name: 'name',
-          rules: [{ message: t('createNew.name.required'), required: true }],
-        },
-        {
-          children: (
-            <TextArea
-              placeholder={t('createNew.description.placeholder')}
-              style={{ minHeight: 120 }}
-            />
-          ),
-          label: t('createNew.description.placeholder'),
-          name: 'description',
-        },
-      ]}
-      onFinish={onFinish}
-    />
+    <Flexbox gap={16}>
+      <Input
+        autoFocus
+        placeholder={t('createNew.name.placeholder')}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <TextArea
+        placeholder={t('createNew.description.placeholder')}
+        style={{ minHeight: 120 }}
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
+      <Button block loading={loading} onClick={handleSubmit} type={'primary'}>
+        {isEditMode ? t('createNew.edit.confirm') : t('createNew.confirm')}
+      </Button>
+    </Flexbox>
   );
 });
 

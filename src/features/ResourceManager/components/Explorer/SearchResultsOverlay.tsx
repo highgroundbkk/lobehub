@@ -2,7 +2,6 @@
 
 import { Center, Checkbox, Flexbox } from '@lobehub/ui';
 import { VirtuosoMasonry } from '@virtuoso.dev/masonry';
-import { Spin } from 'antd';
 import { cssVar } from 'antd-style';
 import { SearchIcon } from 'lucide-react';
 import { memo, useMemo, useState } from 'react';
@@ -10,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { Virtuoso } from 'react-virtuoso';
 
 import { useResourceManagerStore } from '@/app/[variants]/(main)/resource/features/store';
+import NeuralNetworkLoading from '@/components/NeuralNetworkLoading';
 import { useClientDataSWR } from '@/libs/swr';
 import { resourceService } from '@/services/resource';
 import { useGlobalStore } from '@/store/global';
@@ -101,7 +101,7 @@ const SearchResultsOverlay = memo(() => {
     >
       {isLoading ? (
         <Center height="100%">
-          <Spin />
+          <NeuralNetworkLoading size={48} />
         </Center>
       ) : !data || data.length === 0 ? (
         <Center height="100%">
