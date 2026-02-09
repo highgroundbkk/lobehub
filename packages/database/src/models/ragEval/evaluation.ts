@@ -6,8 +6,8 @@ import {
   evalDatasets,
   evalEvaluation,
   evaluationRecords,
-} from '../../../schemas';
-import { LobeChatDatabase } from '../../../type';
+} from '../../schemas';
+import { LobeChatDatabase } from '../../type';
 
 export class EvalEvaluationModel {
   private userId: string;
