@@ -9,6 +9,8 @@
   "addToKnowledgeBase.title": "Add to Library",
   "addToKnowledgeBase.totalFiles": "{{count}} files selected",
   "createNew.confirm": "Create New",
+  "createNew.edit.confirm": "Save Changes",
+  "createNew.edit.title": "Edit Library",
   "createNew.description.placeholder": "Library description (optional)",
   "createNew.formTitle": "Basic Information",
   "createNew.name.placeholder": "Library name",

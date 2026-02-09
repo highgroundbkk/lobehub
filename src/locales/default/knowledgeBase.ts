@@ -11,6 +11,8 @@ export default {
   'moveToKnowledgeBase.error': 'Failed to move file to Library',
   'moveToKnowledgeBase.success': 'File moved successfully',
   'createNew.confirm': 'Create New',
+  'createNew.edit.confirm': 'Save Changes',
+  'createNew.edit.title': 'Edit Library',
   'createNew.description.placeholder': 'Library description (optional)',
   'createNew.formTitle': 'Basic Information',
   'createNew.name.placeholder': 'Library name',

@@ -6,28 +6,39 @@ import { useKnowledgeBaseStore } from '@/store/library';
 import { type CreateKnowledgeBaseParams } from '@/types/knowledgeBase';
 
 interface CreateFormProps {
+  id?: string;
+  initialValues?: { name?: string; description?: string };
   onClose?: () => void;
   onSuccess?: (id: string) => void;
 }
 
-const CreateForm = memo<CreateFormProps>(({ onClose, onSuccess }) => {
+const CreateForm = memo<CreateFormProps>(({ id, initialValues, onClose, onSuccess }) => {
   const { t } = useTranslation('knowledgeBase');
   const [loading, setLoading] = useState(false);
   const createNewKnowledgeBase = useKnowledgeBaseStore((s) => s.createNewKnowledgeBase);
+  const updateKnowledgeBase = useKnowledgeBaseStore((s) => s.updateKnowledgeBase);
+
+  const isEditMode = !!id;
 
   const onFinish = async (values: CreateKnowledgeBaseParams) => {
     setLoading(true);
 
     try {
-      const id = await createNewKnowledgeBase(values);
-      setLoading(false);
-
-      // Call onSuccess callback if provided, otherwise navigate directly
-      if (onSuccess) {
-        onSuccess(id);
+      if (isEditMode) {
+        await updateKnowledgeBase(id, values);
+        setLoading(false);
         onClose?.();
       } else {
-        window.location.href = `/resource/library/${id}`;
+        const newId = await createNewKnowledgeBase(values);
+        setLoading(false);
+
+        // Call onSuccess callback if provided, otherwise navigate directly
+        if (onSuccess) {
+          onSuccess(newId);
+          onClose?.();
+        } else {
+          window.location.href = `/resource/library/${newId}`;
+        }
       }
     } catch (e) {
       console.error(e);
@@ -38,11 +49,12 @@ const CreateForm = memo<CreateFormProps>(({ onClose, onSuccess }) => {
   return (
     <Form
       gap={16}
+      initialValues={initialValues}
       itemsType={'flat'}
       layout={'vertical'}
       footer={
         <Button block htmlType={'submit'} loading={loading} type={'primary'}>
-          {t('createNew.confirm')}
+          {isEditMode ? t('createNew.edit.confirm') : t('createNew.confirm')}
         </Button>
       }
       items={[
