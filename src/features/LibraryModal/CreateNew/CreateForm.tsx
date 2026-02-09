@@ -58,12 +58,15 @@ const CreateForm = memo<CreateFormProps>(({ id, initialValues, onClose, onSucces
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
-      <TextArea
-        placeholder={t('createNew.description.placeholder')}
-        style={{ minHeight: 120 }}
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
+      <Flexbox gap={8}>
+        <label style={{ fontSize: 14 }}>{t('createNew.description.label')}</label>
+        <TextArea
+          placeholder={t('createNew.description.placeholder')}
+          style={{ minHeight: 120 }}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </Flexbox>
       <Button block loading={loading} onClick={handleSubmit} type={'primary'}>
         {isEditMode ? t('createNew.edit.confirm') : t('createNew.confirm')}
       </Button>
