@@ -12,6 +12,8 @@ import { useTranslation } from 'react-i18next';
 import { useGlobalStore } from '@/store/global';
 import { globalGeneralSelectors } from '@/store/global/selectors';
 
+import { useConversationStore } from '../../store';
+
 const QUICK_REACTIONS = ['👍', '👎', '❤️', '😄', '😂', '😅', '🎉', '😢', '🤔', '🚀'];
 
 const useStyles = createStyles(({ css, token }) => ({
@@ -61,20 +63,21 @@ const useStyles = createStyles(({ css, token }) => ({
 }));
 
 interface ReactionPickerProps {
-  onSelect: (emoji: string) => void;
+  messageId: string;
   trigger?: ReactNode;
 }
 
-const ReactionPicker: FC<ReactionPickerProps> = memo(({ onSelect, trigger }) => {
+const ReactionPicker: FC<ReactionPickerProps> = memo(({ messageId, trigger }) => {
   const { styles } = useStyles();
   const { t } = useTranslation('chat');
   const theme = useTheme();
   const locale = useGlobalStore(globalGeneralSelectors.currentLanguage);
+  const addReaction = useConversationStore((s) => s.addReaction);
   const [open, setOpen] = useState(false);
   const [showFullPicker, setShowFullPicker] = useState(false);
 
   const handleSelect = (emoji: string) => {
-    onSelect(emoji);
+    addReaction(messageId, emoji);
     setOpen(false);
     setShowFullPicker(false);
   };

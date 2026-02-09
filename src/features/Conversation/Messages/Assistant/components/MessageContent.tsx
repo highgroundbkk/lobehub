@@ -6,8 +6,8 @@ import { memo, useCallback } from 'react';
 import { useUserStore } from '@/store/user';
 import { userProfileSelectors } from '@/store/user/selectors';
 
-import { messageStateSelectors, useConversationStore } from '../../../store';
 import { ReactionDisplay } from '../../../components/Reaction';
+import { messageStateSelectors, useConversationStore } from '../../../store';
 import { CollapsedMessage } from '../../AssistantGroup/components/CollapsedMessage';
 import DisplayContent from '../../components/DisplayContent';
 import FileChunks from '../../components/FileChunks';
@@ -84,7 +84,7 @@ const MessageContent = memo<UIChatMessage>(
         {reactions.length > 0 && (
           <ReactionDisplay
             isActive={isActive}
-            onAdd={(emoji) => addReaction(id, emoji)}
+            messageId={id}
             onReactionClick={handleReactionClick}
             reactions={reactions}
           />

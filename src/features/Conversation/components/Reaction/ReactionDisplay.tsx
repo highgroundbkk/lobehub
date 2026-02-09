@@ -51,9 +51,9 @@ interface ReactionDisplayProps {
    */
   isActive?: (emoji: string) => boolean;
   /**
-   * Callback when an emoji is added via the inline picker
+   * The message ID for adding reactions via the inline picker
    */
-  onAdd?: (emoji: string) => void;
+  messageId?: string;
   /**
    * Callback when a reaction is clicked
    */
@@ -65,7 +65,7 @@ interface ReactionDisplayProps {
 }
 
 const ReactionDisplay = memo<ReactionDisplayProps>(
-  ({ reactions, onReactionClick, onAdd, isActive }) => {
+  ({ reactions, onReactionClick, messageId, isActive }) => {
     const { styles, cx } = useStyles();
 
     if (reactions.length === 0) return null;
@@ -82,7 +82,7 @@ const ReactionDisplay = memo<ReactionDisplayProps>(
             {reaction.count > 1 && <span className={styles.count}>{reaction.count}</span>}
           </div>
         ))}
-        {onAdd && <ReactionPicker onSelect={onAdd} />}
+        {messageId && <ReactionPicker messageId={messageId} />}
       </Flexbox>
     );
   },

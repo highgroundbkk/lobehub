@@ -4,8 +4,6 @@ import type { AssistantContentBlock, EmojiReaction } from '@lobechat/types';
 import isEqual from 'fast-deep-equal';
 import { type MouseEventHandler, Suspense, memo, useCallback, useMemo } from 'react';
 
-import { ReactionDisplay } from '../../components/Reaction';
-
 import { MESSAGE_ACTION_BAR_PORTAL_ATTRIBUTES } from '@/const/messageActionPortal';
 import { ChatItem } from '@/features/Conversation/ChatItem';
 import { useNewScreen } from '@/features/Conversation/Messages/components/useNewScreen';
@@ -17,6 +15,7 @@ import { useGlobalStore } from '@/store/global';
 import { useUserStore } from '@/store/user';
 import { userProfileSelectors } from '@/store/user/selectors';
 
+import { ReactionDisplay } from '../../components/Reaction';
 import { useAgentMeta } from '../../hooks';
 import { dataSelectors, messageStateSelectors, useConversationStore } from '../../store';
 import {
@@ -176,7 +175,7 @@ const GroupMessage = memo<GroupMessageProps>(({ id, index, disableEditing, isLat
       {reactions.length > 0 && (
         <ReactionDisplay
           isActive={isReactionActive}
-          onAdd={(emoji) => addReaction(id, emoji)}
+          messageId={id}
           onReactionClick={handleReactionClick}
           reactions={reactions}
         />

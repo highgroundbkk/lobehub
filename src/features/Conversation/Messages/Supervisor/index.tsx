@@ -6,8 +6,6 @@ import isEqual from 'fast-deep-equal';
 import { type MouseEventHandler, memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ReactionDisplay } from '../../components/Reaction';
-
 import { MESSAGE_ACTION_BAR_PORTAL_ATTRIBUTES } from '@/const/messageActionPortal';
 import AgentGroupAvatar from '@/features/AgentGroupAvatar';
 import { ChatItem } from '@/features/Conversation/ChatItem';
@@ -17,6 +15,7 @@ import { agentGroupSelectors } from '@/store/agentGroup/selectors';
 import { useUserStore } from '@/store/user';
 import { userProfileSelectors } from '@/store/user/selectors';
 
+import { ReactionDisplay } from '../../components/Reaction';
 import { useAgentMeta } from '../../hooks';
 import { dataSelectors, messageStateSelectors, useConversationStore } from '../../store';
 import {
@@ -155,7 +154,7 @@ const GroupMessage = memo<GroupMessageProps>(({ id, index, disableEditing, isLat
       {reactions.length > 0 && (
         <ReactionDisplay
           isActive={isReactionActive}
-          onAdd={(emoji) => addReaction(id, emoji)}
+          messageId={id}
           onReactionClick={handleReactionClick}
           reactions={reactions}
         />

@@ -69,7 +69,6 @@ export const AssistantActionsBar = memo<AssistantActionsBarProps>(
   ({ actionsConfig, id, data, index }) => {
     const { error, tools } = data;
     const store = useConversationStoreApi();
-    const addReaction = useConversationStore((s) => s.addReaction);
 
     const handleOpenShareModal = useCallback(() => {
       createRawModal(
@@ -213,7 +212,7 @@ export const AssistantActionsBar = memo<AssistantActionsBarProps>(
 
     return (
       <Flexbox align={'center'} gap={8} horizontal>
-        <ReactionPicker onSelect={(emoji) => addReaction(id, emoji)} />
+        <ReactionPicker messageId={id} />
         <ActionIconGroup items={items} menu={menu} onActionClick={handleAction} />
       </Flexbox>
     );

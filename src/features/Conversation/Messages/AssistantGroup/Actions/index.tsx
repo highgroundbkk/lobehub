@@ -71,7 +71,6 @@ interface GroupActionsProps {
 const WithContentId = memo<GroupActionsProps>(({ actionsConfig, id, data, contentBlock }) => {
   const { tools } = data;
   const store = useConversationStoreApi();
-  const addReaction = useConversationStore((s) => s.addReaction);
   const handleOpenShareModal = useCallback(() => {
     createRawModal(
       (props: ShareModalProps) => (
@@ -166,7 +165,7 @@ const WithContentId = memo<GroupActionsProps>(({ actionsConfig, id, data, conten
 
   return (
     <Flexbox align={'center'} gap={8} horizontal>
-      <ReactionPicker onSelect={(emoji) => addReaction(id, emoji)} />
+      <ReactionPicker messageId={id} />
       <ActionIconGroup items={items} menu={menu} onActionClick={handleAction} />
     </Flexbox>
   );
