@@ -1,8 +1,10 @@
 'use client';
 
 import { Button, Flexbox } from '@lobehub/ui';
-import { createStaticStyles, responsive } from 'antd-style';
+import { createStaticStyles, cx, responsive } from 'antd-style';
 import { memo } from 'react';
+
+import { useIsDark } from '@/hooks/useIsDark';
 
 const styles = createStaticStyles(({ css }) => ({
   banner: css`
@@ -10,22 +12,32 @@ const styles = createStaticStyles(({ css }) => ({
     width: 100%;
     padding: 24px 32px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #fceabb 0%, #f8b500 50%, #e88a20 100%);
 
     ${responsive.sm} {
       padding: 16px 20px;
     }
+  `,
+  banner_dark: css`
+    background: linear-gradient(135deg, #5c3d0e 0%, #7a4f10 50%, #6b3a08 100%);
+  `,
+  banner_light: css`
+    background: linear-gradient(135deg, #fceabb 0%, #f8b500 50%, #e88a20 100%);
   `,
   subtitle: css`
     margin: 0;
     font-size: 14px;
     font-weight: 400;
     line-height: 1.5;
-    color: rgba(0, 0, 0, 0.65);
 
     ${responsive.sm} {
       font-size: 12px;
     }
+  `,
+  subtitle_dark: css`
+    color: rgba(255, 255, 255, 0.65);
+  `,
+  subtitle_light: css`
+    color: rgba(0, 0, 0, 0.65);
   `,
   symbols: css`
     position: absolute;
@@ -35,7 +47,7 @@ const styles = createStaticStyles(({ css }) => ({
     overflow: hidden;
     width: 50%;
     border-radius: 0 12px 12px 0;
-    background: url('/images/banner_creator.png') right center / contain no-repeat;
+    background: url('/images/banner_creator.png') right center / auto 100% no-repeat;
     pointer-events: none;
 
     ${responsive.sm} {
@@ -47,21 +59,37 @@ const styles = createStaticStyles(({ css }) => ({
     font-size: 22px;
     font-weight: 700;
     line-height: 1.3;
-    color: rgba(0, 0, 0, 0.88);
 
     ${responsive.sm} {
       font-size: 18px;
     }
   `,
+  title_dark: css`
+    color: rgba(255, 255, 255, 0.88);
+  `,
+  title_light: css`
+    color: rgba(0, 0, 0, 0.88);
+  `,
 }));
 
 const CreatorRewardBanner = memo(() => {
+  const isDark = useIsDark();
+
   return (
-    <Flexbox className={styles.banner} width={'100%'}>
+    <Flexbox
+      className={cx(styles.banner, isDark ? styles.banner_dark : styles.banner_light)}
+      width={'100%'}
+    >
       <Flexbox gap={8} style={{ position: 'relative', zIndex: 1 }}>
-        <h2 className={styles.title}>Create. Share. Get Paid.</h2>
-        <p className={styles.subtitle}>2026 Creator Reward Program is officially live.</p>
-        <div>
+        <h2 className={cx(styles.title, isDark ? styles.title_dark : styles.title_light)}>
+          Create. Share. Get Paid.
+        </h2>
+        <p
+          className={cx(styles.subtitle, isDark ? styles.subtitle_dark : styles.subtitle_light)}
+        >
+          2026 Creator Reward Program is officially live.
+        </p>
+        <div style={{ marginBlockStart: 4 }}>
           <a href={'#'} rel={'noopener noreferrer'} target={'_blank'}>
             <Button type={'primary'}>Apply Now</Button>
           </a>
