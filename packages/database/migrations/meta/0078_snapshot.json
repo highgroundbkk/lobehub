@@ -6,7 +6,7 @@
   },
   "dialect": "postgresql",
   "enums": {},
-  "id": "b0a80479-213c-4373-b2ff-0a121f52b9d7",
+  "id": "2cd53901-3710-416f-be1a-d1f9da0b3c71",
   "policies": {},
   "prevId": "0c4fc2ef-ebee-400e-a4b0-d0b2c8ac88c8",
   "roles": {},
@@ -9472,6 +9472,21 @@
           "method": "btree",
           "with": {}
         },
+        "threads_type_idx": {
+          "name": "threads_type_idx",
+          "columns": [
+            {
+              "expression": "type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "threads_agent_id_idx": {
           "name": "threads_agent_id_idx",
           "columns": [
@@ -10008,6 +10023,21 @@
           "columns": [
             {
               "expression": "agent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "topics_trigger_idx": {
+          "name": "topics_trigger_idx",
+          "columns": [
+            {
+              "expression": "trigger",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

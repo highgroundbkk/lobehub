@@ -51,6 +51,7 @@ export const topics = pgTable(
     index('topics_session_id_idx').on(t.sessionId),
     index('topics_group_id_idx').on(t.groupId),
     index('topics_agent_id_idx').on(t.agentId),
+    index('topics_trigger_idx').on(t.trigger),
     index('topics_extract_status_gin_idx').using(
       'gin',
       sql`(metadata->'userMemoryExtractStatus') jsonb_path_ops`,
@@ -109,6 +110,7 @@ export const threads = pgTable(
     uniqueIndex('threads_client_id_user_id_unique').on(t.clientId, t.userId),
     index('threads_user_id_idx').on(t.userId),
     index('threads_topic_id_idx').on(t.topicId),
+    index('threads_type_idx').on(t.type),
     index('threads_agent_id_idx').on(t.agentId),
     index('threads_group_id_idx').on(t.groupId),
     index('threads_parent_thread_id_idx').on(t.parentThreadId),

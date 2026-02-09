@@ -1284,6 +1284,7 @@ table threads {
     (client_id, user_id) [name: 'threads_client_id_user_id_unique', unique]
     user_id [name: 'threads_user_id_idx']
     topic_id [name: 'threads_topic_id_idx']
+    type [name: 'threads_type_idx']
     agent_id [name: 'threads_agent_id_idx']
     group_id [name: 'threads_group_id_idx']
     parent_thread_id [name: 'threads_parent_thread_id_idx']
@@ -1346,6 +1347,7 @@ table topics {
     session_id [name: 'topics_session_id_idx']
     group_id [name: 'topics_group_id_idx']
     agent_id [name: 'topics_agent_id_idx']
+    trigger [name: 'topics_trigger_idx']
     () [name: 'topics_extract_status_gin_idx']
   }
 }

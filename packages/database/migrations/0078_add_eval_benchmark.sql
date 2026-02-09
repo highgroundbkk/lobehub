@@ -89,4 +89,6 @@ CREATE INDEX IF NOT EXISTS "agent_eval_runs_user_id_idx" ON "agent_eval_runs" US
 CREATE INDEX IF NOT EXISTS "agent_eval_runs_status_idx" ON "agent_eval_runs" USING btree ("status");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "agent_eval_runs_target_agent_id_idx" ON "agent_eval_runs" USING btree ("target_agent_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "agent_eval_test_cases_dataset_id_idx" ON "agent_eval_test_cases" USING btree ("dataset_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "agent_eval_test_cases_sort_order_idx" ON "agent_eval_test_cases" USING btree ("sort_order");
+CREATE INDEX IF NOT EXISTS "agent_eval_test_cases_sort_order_idx" ON "agent_eval_test_cases" USING btree ("sort_order");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "threads_type_idx" ON "threads" USING btree ("type");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "topics_trigger_idx" ON "topics" USING btree ("trigger");
