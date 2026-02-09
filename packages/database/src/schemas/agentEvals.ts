@@ -148,9 +148,9 @@ export const agentEvalRuns = pgTable(
     name: text('name'),
 
     status: text('status', {
-      enum: ['pending', 'running', 'completed', 'failed', 'aborted'],
+      enum: ['idle', 'pending', 'running', 'completed', 'failed', 'aborted'],
     })
-      .default('pending')
+      .default('idle')
       .notNull(),
 
     config: jsonb('config').$type<EvalRunConfig>(),

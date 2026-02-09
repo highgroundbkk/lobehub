@@ -160,7 +160,7 @@ table agent_eval_runs {
   target_agent_id text
   user_id text [not null]
   name text
-  status text [not null, default: 'pending']
+  status text [not null, default: 'idle']
   config jsonb
   metrics jsonb
   accessed_at "timestamp with time zone" [not null, default: `now()`]

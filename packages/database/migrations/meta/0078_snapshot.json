@@ -6,7 +6,7 @@
   },
   "dialect": "postgresql",
   "enums": {},
-  "id": "2cd53901-3710-416f-be1a-d1f9da0b3c71",
+  "id": "a1206d9f-5a21-4541-806a-5273f1d06b75",
   "policies": {},
   "prevId": "0c4fc2ef-ebee-400e-a4b0-d0b2c8ac88c8",
   "roles": {},
@@ -1254,7 +1254,7 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'pending'"
+          "default": "'idle'"
         },
         "config": {
           "name": "config",

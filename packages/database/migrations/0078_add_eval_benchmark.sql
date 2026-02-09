@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS "agent_eval_runs" (
 	"target_agent_id" text,
 	"user_id" text NOT NULL,
 	"name" text,
-	"status" text DEFAULT 'pending' NOT NULL,
+	"status" text DEFAULT 'idle' NOT NULL,
 	"config" jsonb,
 	"metrics" jsonb,
 	"accessed_at" timestamp with time zone DEFAULT now() NOT NULL,

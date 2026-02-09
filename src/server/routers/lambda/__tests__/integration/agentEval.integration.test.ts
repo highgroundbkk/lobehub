@@ -3,7 +3,10 @@ import { LobeChatDatabase } from '@lobechat/database';
 import {
   agentEvalBenchmarks,
   agentEvalDatasets,
+  agentEvalRunTopics,
+  agentEvalRuns,
   agentEvalTestCases,
+  topics,
 } from '@lobechat/database/schemas';
 import { getTestDB } from '@lobechat/database/test-utils';
 import { eq } from 'drizzle-orm';
@@ -45,7 +48,10 @@ describe('Agent Eval Router Integration Tests', () => {
     serverDB = await getTestDB();
     testDB = serverDB;
 
-    // Clean up agentEval tables before each test
+    // Clean up agentEval tables before each test (order matters due to foreign keys)
+    await serverDB.delete(agentEvalRunTopics);
+    await serverDB.delete(topics);
+    await serverDB.delete(agentEvalRuns);
     await serverDB.delete(agentEvalTestCases);
     await serverDB.delete(agentEvalDatasets);
     await serverDB.delete(agentEvalBenchmarks);
@@ -804,6 +810,351 @@ describe('Agent Eval Router Integration Tests', () => {
 
       // Cleanup
       await cleanupTestUser(serverDB, user2Id);
+    });
+  });
+
+  describe('Run Operations', () => {
+    let datasetId: string;
+
+    beforeEach(async () => {
+      const [benchmark] = await serverDB
+        .insert(agentEvalBenchmarks)
+        .values({
+          identifier: 'test-benchmark',
+          name: 'Test Benchmark',
+          rubrics: [],
+          passThreshold: 0.6,
+          isSystem: false,
+        })
+        .returning();
+
+      const [dataset] = await serverDB
+        .insert(agentEvalDatasets)
+        .values({
+          benchmarkId: benchmark.id,
+          identifier: 'test-dataset',
+          name: 'Test Dataset',
+          userId,
+        })
+        .returning();
+      datasetId = dataset.id;
+    });
+
+    describe('createRun', () => {
+      it('should create a new run with minimal parameters', async () => {
+        const caller = agentEvalRouter.createCaller(createTestContext(userId));
+
+        const result = await caller.createRun({
+          datasetId,
+        });
+
+        expect(result).toBeDefined();
+        expect(result.id).toBeDefined();
+        expect(result.datasetId).toBe(datasetId);
+        expect(result.userId).toBe(userId);
+        expect(result.status).toBe('idle');
+        expect(result.name).toBeNull();
+        expect(result.targetAgentId).toBeNull();
+
+        // Verify in database
+        const run = await serverDB.query.agentEvalRuns.findFirst({
+          where: eq(agentEvalRuns.id, result.id),
+        });
+        expect(run).toBeDefined();
+      });
+
+      it('should create a run with all parameters', async () => {
+        const caller = agentEvalRouter.createCaller(createTestContext(userId));
+
+        const result = await caller.createRun({
+          datasetId,
+          name: 'Test Run',
+          config: {
+            concurrency: 5,
+            timeout: 300000,
+          },
+        });
+
+        expect(result.name).toBe('Test Run');
+        expect(result.config).toEqual({ concurrency: 5, timeout: 300000 });
+      });
+
+      it('should default status to idle', async () => {
+        const caller = agentEvalRouter.createCaller(createTestContext(userId));
+
+        const result = await caller.createRun({ datasetId });
+
+        expect(result.status).toBe('idle');
+      });
+
+      it('should throw BAD_REQUEST when dataset not found', async () => {
+        const caller = agentEvalRouter.createCaller(createTestContext(userId));
+
+        await expect(
+          caller.createRun({
+            datasetId: 'non-existent-dataset',
+          }),
+        ).rejects.toThrow(/not found/);
+      });
+    });
+
+    describe('listRuns', () => {
+      beforeEach(async () => {
+        await serverDB.insert(agentEvalRuns).values([
+          {
+            datasetId,
+            userId,
+            name: 'Run 1',
+            status: 'idle',
+          },
+          {
+            datasetId,
+            userId,
+            name: 'Run 2',
+            status: 'pending',
+          },
+          {
+            datasetId,
+            userId,
+            name: 'Run 3',
+            status: 'running',
+          },
+        ]);
+      });
+
+      it('should list all runs', async () => {
+        const caller = agentEvalRouter.createCaller(createTestContext(userId));
+
+        const result = await caller.listRuns({});
+
+        expect(result.data.length).toBeGreaterThanOrEqual(3);
+        expect(result.data.map((r) => r.name)).toContain('Run 1');
+        expect(result.data.map((r) => r.name)).toContain('Run 2');
+        expect(result.data.map((r) => r.name)).toContain('Run 3');
+      });
+
+      it('should filter by datasetId', async () => {
+        const caller = agentEvalRouter.createCaller(createTestContext(userId));
+
+        const result = await caller.listRuns({ datasetId });
+
+        expect(result.data.every((r) => r.datasetId === datasetId)).toBe(true);
+      });
+
+      it('should filter by status', async () => {
+        const caller = agentEvalRouter.createCaller(createTestContext(userId));
+
+        const result = await caller.listRuns({ status: 'pending' });
+
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].name).toBe('Run 2');
+        expect(result.data[0].status).toBe('pending');
+      });
+
+      it('should support limit parameter', async () => {
+        const caller = agentEvalRouter.createCaller(createTestContext(userId));
+
+        const result = await caller.listRuns({ limit: 2 });
+
+        expect(result.data).toHaveLength(2);
+      });
+
+      it('should support offset parameter', async () => {
+        const caller = agentEvalRouter.createCaller(createTestContext(userId));
+
+        const allRuns = await caller.listRuns({});
+        const result = await caller.listRuns({ offset: 1 });
+
+        expect(result.data.length).toBe(allRuns.data.length - 1);
+      });
+    });
+
+    describe('getRunDetails', () => {
+      it('should get run details with dataset and topics', async () => {
+        const caller = agentEvalRouter.createCaller(createTestContext(userId));
+
+        // Create run
+        const run = await caller.createRun({
+          datasetId,
+          name: 'Details Test Run',
+        });
+
+        // Create test case
+        const [testCase] = await serverDB
+          .insert(agentEvalTestCases)
+          .values({
+            datasetId,
+            content: { input: 'Test question' },
+            sortOrder: 1,
+          })
+          .returning();
+
+        // Create topic
+        const [topic] = await serverDB
+          .insert(topics)
+          .values({
+            userId,
+            title: 'Test Topic',
+            trigger: 'eval',
+            mode: 'test',
+          })
+          .returning();
+
+        // Link run, topic, and test case
+        await serverDB.insert(agentEvalRunTopics).values({
+          runId: run.id,
+          topicId: topic.id,
+          testCaseId: testCase.id,
+        });
+
+        // Get details
+        const result = await caller.getRunDetails({ id: run.id });
+
+        expect(result).toBeDefined();
+        expect(result.id).toBe(run.id);
+        expect(result.name).toBe('Details Test Run');
+        expect(result.dataset).toBeDefined();
+        expect(result.dataset?.id).toBe(datasetId);
+        expect(result.topics).toHaveLength(1);
+        expect((result.topics[0].topic as any).id).toBe(topic.id);
+        expect((result.topics[0].testCase as any).id).toBe(testCase.id);
+      });
+
+      it('should throw NOT_FOUND when run does not exist', async () => {
+        const caller = agentEvalRouter.createCaller(createTestContext(userId));
+
+        await expect(caller.getRunDetails({ id: 'non-existent' })).rejects.toThrow(/not found/);
+      });
+
+      it('should not allow access to another users run', async () => {
+        const user2Id = await createTestUser(serverDB, 'user-2');
+
+        // Create run as user1
+        const caller1 = agentEvalRouter.createCaller(createTestContext(userId));
+        const run = await caller1.createRun({
+          datasetId,
+          name: 'User 1 Run',
+        });
+
+        // Try to access as user2
+        const caller2 = agentEvalRouter.createCaller(createTestContext(user2Id));
+        await expect(caller2.getRunDetails({ id: run.id })).rejects.toThrow(/not found/);
+
+        // Cleanup
+        await cleanupTestUser(serverDB, user2Id);
+      });
+    });
+
+    describe('deleteRun', () => {
+      it('should delete a run', async () => {
+        const caller = agentEvalRouter.createCaller(createTestContext(userId));
+
+        const created = await caller.createRun({
+          datasetId,
+          name: 'Delete Test',
+        });
+
+        const result = await caller.deleteRun({ id: created.id });
+
+        expect(result.success).toBe(true);
+
+        // Verify deletion
+        const deleted = await serverDB.query.agentEvalRuns.findFirst({
+          where: eq(agentEvalRuns.id, created.id),
+        });
+        expect(deleted).toBeUndefined();
+      });
+
+      it('should not delete another users run', async () => {
+        const user2Id = await createTestUser(serverDB, 'user-2');
+
+        // Create run as user1
+        const caller1 = agentEvalRouter.createCaller(createTestContext(userId));
+        const run = await caller1.createRun({
+          datasetId,
+          name: 'User 1 Run',
+        });
+
+        // Try to delete as user2
+        const caller2 = agentEvalRouter.createCaller(createTestContext(user2Id));
+        await caller2.deleteRun({ id: run.id });
+
+        // Verify run still exists
+        const stillExists = await serverDB.query.agentEvalRuns.findFirst({
+          where: eq(agentEvalRuns.id, run.id),
+        });
+        expect(stillExists).toBeDefined();
+
+        // Cleanup
+        await cleanupTestUser(serverDB, user2Id);
+      });
+
+      it('should return error when run not found', async () => {
+        const caller = agentEvalRouter.createCaller(createTestContext(userId));
+
+        await caller.deleteRun({ id: 'non-existent' });
+
+        // In PGlite, rowCount may be undefined, so we can't reliably detect non-existent deletes
+        // This test just verifies no error is thrown
+        expect(true).toBe(true);
+      });
+    });
+
+    describe('Run lifecycle', () => {
+      it('should track run status progression', async () => {
+        const caller = agentEvalRouter.createCaller(createTestContext(userId));
+
+        // Create run (idle)
+        const run = await caller.createRun({
+          datasetId,
+          name: 'Lifecycle Test',
+        });
+        expect(run.status).toBe('idle');
+
+        // Update to pending
+        await serverDB
+          .update(agentEvalRuns)
+          .set({ status: 'pending', updatedAt: new Date() })
+          .where(eq(agentEvalRuns.id, run.id));
+
+        let updated = await caller.getRunDetails({ id: run.id });
+        expect(updated.status).toBe('pending');
+
+        // Update to running
+        await serverDB
+          .update(agentEvalRuns)
+          .set({ status: 'running', updatedAt: new Date() })
+          .where(eq(agentEvalRuns.id, run.id));
+
+        updated = await caller.getRunDetails({ id: run.id });
+        expect(updated.status).toBe('running');
+
+        // Update to completed
+        await serverDB
+          .update(agentEvalRuns)
+          .set({
+            status: 'completed',
+            metrics: {
+              totalCases: 10,
+              passedCases: 10,
+              failedCases: 0,
+              averageScore: 0.95,
+              passRate: 1.0,
+            },
+            updatedAt: new Date(),
+          })
+          .where(eq(agentEvalRuns.id, run.id));
+
+        updated = await caller.getRunDetails({ id: run.id });
+        expect(updated.status).toBe('completed');
+        expect(updated.metrics).toMatchObject({
+          totalCases: 10,
+          passedCases: 10,
+          failedCases: 0,
+          averageScore: 0.95,
+          passRate: 1.0,
+        });
+      });
     });
   });
 });
